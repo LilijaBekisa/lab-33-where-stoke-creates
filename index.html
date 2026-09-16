@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Lab 33 — Where Stoke Creates</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg:#0D0D0D;
+  --card:#1C1C1E;
+  --card-2:#2C2C2E;
+  --line:#38383A;
+  --accent:#FF6A00;
+  --accent-dim:rgba(255,106,0,.12);
+  --text:#FFFFFF;
+  --muted:#8E8E93;
+  --grey-btn:#8E8E93;
+  --r-lg:16px;
+  --r-md:12px;
+  --r-pill:100px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--text);
+  font-size:16px;line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+#app{max-width:520px;margin:0 auto;padding:0 16px 150px;min-height:100vh;}
+.bleed{margin-left:-16px;margin-right:-16px;}
+
+/* ---------- hero ---------- */
+.hero{position:relative;height:64vh;min-height:420px;max-height:580px;overflow:hidden;}
+.hero img{width:100%;height:100%;object-fit:cover;display:block;}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,13,13,.32) 0%,rgba(13,13,13,0) 40%,rgba(13,13,13,.72) 76%,var(--bg) 100%);}
+.hero-txt{position:absolute;left:32px;right:32px;bottom:38px;z-index:2;}
+.hero-txt .brand{font-size:44px;font-weight:800;letter-spacing:.05em;line-height:1;}
+.hero-txt .tag{font-size:16px;color:var(--accent);font-weight:600;margin-top:12px;}
+.hero-txt .loc{font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.6);text-transform:uppercase;margin-top:6px;}
+
+/* ---------- photo band ---------- */
+.band{position:relative;height:190px;overflow:hidden;border-radius:var(--r-lg);}
+.band img{width:100%;height:100%;object-fit:cover;display:block;}
+.band:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,rgba(13,13,13,.9) 8%,rgba(13,13,13,.25) 70%);}
+.band-txt{position:absolute;left:20px;bottom:20px;right:20px;z-index:2;}
+.photo{border-radius:var(--r-lg);overflow:hidden;height:210px;}
+.photo img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ---------- typography ---------- */
+.large-title{font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:0;}
+.t1{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:0;}
+.t2{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0;}
+.headline{font-size:17px;font-weight:600;margin:0;}
+.body{font-size:15px;font-weight:400;margin:0;}
+.sub{font-size:14px;color:var(--muted);margin:0;}
+.cap{font-size:12px;color:var(--muted);letter-spacing:.02em;margin:0;}
+.accent{color:var(--accent);}
+.upper{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:600;color:var(--muted);}
+
+/* ---------- header ---------- */
+header{padding:22px 0 6px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.brand{font-size:26px;font-weight:800;letter-spacing:.06em;}
+.brand-sub{font-size:11px;letter-spacing:.32em;color:var(--muted);margin-top:3px;text-transform:uppercase;}
+.tagline{font-size:15px;color:var(--accent);margin-top:10px;font-weight:600;}
+.intro{font-size:14px;color:var(--muted);margin-top:6px;}
+
+/* ---------- back bar ---------- */
+.backbar{display:flex;align-items:center;gap:6px;padding:20px 0 12px;color:var(--muted);font-size:16px;cursor:pointer;}
+.backbar svg{width:18px;height:18px;stroke:var(--muted);}
+
+/* ---------- section ---------- */
+section{margin-top:46px;}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;}
+.sec-head .link{font-size:14px;color:var(--accent);font-weight:500;cursor:pointer;}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);border-radius:var(--r-lg);padding:16px;border:1px solid transparent;}
+.tap{cursor:pointer;transition:transform .12s ease,border-color .12s ease;}
+.tap:active{transform:scale(.985);}
+
+/* event card */
+.ev{position:relative;overflow:hidden;background:linear-gradient(145deg,#232326 0%,#171719 100%);border-radius:var(--r-lg);padding:22px;margin-bottom:14px;border:1px solid var(--line);}
+.ev-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;}
+.pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--accent);color:var(--accent);border-radius:var(--r-pill);padding:4px 11px;font-size:12px;font-weight:600;white-space:nowrap;}
+.pill.solid{background:var(--accent);color:#000;border-color:var(--accent);}
+.pill.grey{border-color:var(--line);color:var(--muted);}
+.ev-title{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--accent);}
+.ev-sub{font-size:14px;color:var(--muted);margin-top:2px;}
+.ev-meta{display:flex;align-items:center;gap:16px;margin-top:14px;font-size:13px;color:var(--muted);}
+.ev-meta span{display:inline-flex;align-items:center;gap:6px;}
+.ev-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+.price{font-size:20px;font-weight:700;}
+.spots{font-size:12px;font-weight:600;}
+.spots.low{color:var(--accent);}
+.spots.ok{color:var(--muted);}
+
+/* service row */
+.srv{display:flex;align-items:center;gap:15px;background:var(--card);border-radius:var(--r-md);padding:18px 16px;margin-bottom:11px;}
+.srv-i{flex:none;width:44px;height:44px;border-radius:12px;background:var(--card-2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.04em;}
+.srv-b{flex:1;min-width:0;}
+.srv-n{font-size:16px;font-weight:600;}
+.srv-d{font-size:13px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.srv-p{font-size:14px;color:var(--muted);text-align:right;flex:none;}
+.srv-p b{display:block;color:#fff;font-size:15px;}
+.chev{flex:none;width:8px;height:8px;border-right:1.6px solid var(--muted);border-top:1.6px solid var(--muted);transform:rotate(45deg);}
+
+/* membership */
+.tier{background:var(--card);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;border:1px solid transparent;position:relative;}
+.tier.best{border-color:var(--accent);}
+.tier-tag{position:absolute;top:-9px;right:14px;background:var(--accent);color:#000;font-size:10px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:var(--r-pill);text-transform:uppercase;}
+.tier-h{display:flex;justify-content:space-between;align-items:baseline;}
+.tier-n{font-size:18px;font-weight:700;}
+.tier-p{font-size:20px;font-weight:700;color:var(--accent);}
+.tier-p small{font-size:12px;color:var(--muted);font-weight:500;}
+ul.perks{list-style:none;margin:12px 0 0;padding:0;}
+ul.perks li{font-size:14px;color:#D1D1D6;padding-left:18px;position:relative;margin-bottom:7px;line-height:1.35;}
+ul.perks li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--accent);}
+
+/* roster */
+.rost-banner{background:linear-gradient(135deg,rgba(255,106,0,.16),rgba(255,106,0,.03));border:1px solid rgba(255,106,0,.35);border-radius:var(--r-lg);padding:18px;}
+.cr{display:flex;align-items:center;gap:13px;background:var(--card);border-radius:var(--r-md);padding:12px 14px;margin-bottom:9px;}
+.av{flex:none;width:42px;height:42px;border-radius:50%;background:var(--card-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;-ms-overflow-style:none;scrollbar-width:none;}
+.filters::-webkit-scrollbar{display:none;}
+.chip{flex:none;border:1px solid var(--line);color:var(--muted);border-radius:var(--r-pill);padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;background:transparent;}
+.chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+
+/* selectable option / slot */
+.opt{border:1px solid var(--line);background:var(--card);border-radius:var(--r-md);padding:14px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;transition:border-color .12s;}
+.opt.on{border-color:var(--accent);background:var(--accent-dim);}
+.opt-n{font-size:15px;font-weight:600;}
+.opt-d{font-size:13px;color:var(--muted);margin-top:2px;}
+.opt-p{font-size:15px;font-weight:700;white-space:nowrap;}
+.opt.on .opt-p{color:var(--accent);}
+
+.slots{display:flex;flex-wrap:wrap;gap:8px;}
+.slot{border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;font-size:13px;cursor:pointer;background:var(--card);min-width:calc(50% - 4px);flex:1;transition:border-color .12s;}
+.slot.on{border-color:var(--accent);background:var(--accent-dim);}
+.slot .d{font-weight:600;font-size:13px;}
+.slot .t{color:var(--muted);font-size:12px;margin-top:2px;}
+.slot.off{opacity:.32;pointer-events:none;text-decoration:line-through;}
+.slot.on .d{color:var(--accent);}
+
+/* inputs */
+.field{margin-bottom:10px;}
+input,textarea,select{
+  width:100%;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:14px;color:#fff;font-size:16px;font-family:inherit;outline:none;
+}
+input::placeholder,textarea::placeholder{color:#636366;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%238E8E93' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 14px center;}
+.note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.45;}
+
+/* summary box */
+.sum{background:var(--card);border-radius:var(--r-md);padding:14px;margin-bottom:18px;border:1px solid var(--line);}
+.sum-r{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:5px 0;}
+.sum-r span:first-child{color:var(--muted);}
+.sum-r span:last-child{text-align:right;font-weight:500;}
+.sum-r.total{border-top:1px solid var(--line);margin-top:8px;padding-top:11px;font-size:16px;font-weight:700;}
+.sum-r.total span:last-child{color:var(--accent);}
+
+/* bottom bar */
+#bar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + var(--safe-b));background:linear-gradient(to top,var(--bg) 62%,rgba(13,13,13,0));z-index:50;}
+#bar .inner{max-width:520px;margin:0 auto;}
+button.btn{width:100%;border:none;border-radius:var(--r-pill);padding:16px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;background:var(--accent);color:#000;transition:opacity .15s;}
+button.btn:disabled{background:var(--grey-btn);color:#1C1C1E;cursor:default;}
+button.btn.ghost{background:transparent;border:1px solid var(--line);color:#fff;}
+.barnote{text-align:center;font-size:12px;color:var(--muted);margin-bottom:9px;}
+
+/* success */
+.tick{width:62px;height:62px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:34px auto 20px;}
+.tick svg{width:28px;height:28px;stroke:#000;stroke-width:3;fill:none;}
+.center{text-align:center;}
+
+/* upsell */
+.upsell{background:linear-gradient(135deg,rgba(255,106,0,.16),rgba(255,106,0,.03));border:1px solid rgba(255,106,0,.35);border-radius:var(--r-lg);padding:18px;margin-top:26px;}
+
+/* fallback */
+.fallback{margin-top:70px;text-align:center;padding:28px 20px;background:var(--card);border-radius:var(--r-lg);border:1px solid var(--line);}
+.fallback .ic{font-size:30px;margin-bottom:12px;}
+
+.demo{font-size:11px;color:#48484A;text-align:center;margin-top:18px;}
+.hr{height:1px;background:var(--line);margin:22px 0;}
+</style>
+</head>
+<body>
+
+
+
+<div id="app"><div class="fallback" style="margin-top:120px;border:none;background:transparent"><p class="sub">Loading…</p></div></div>
+<div id="bar" style="display:none"><div class="inner"><div class="barnote" id="barnote" style="display:none"></div><button class="btn" id="mainbtn"></button></div></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- Telegram ---------- */
+var tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+if (tg) {
+  try {
+    tg.ready();
+    tg.expand();
+    if (tg.setHeaderColor) tg.setHeaderColor('#0D0D0D');
+    if (tg.setBackgroundColor) tg.setBackgroundColor('#0D0D0D');
+    if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+  } catch(e) {}
+}
+function haptic(type){
+  try { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred(type || 'light'); } catch(e){}
+}
+function tgUser(){
+  try { return (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null; } catch(e){ return null; }
+}
+
+/* ---------- state ---------- */
+var D = null;
+var S = { screen:'home', stack:[], sel:{}, filter:'All', form:{} };
+var app = document.getElementById('app');
+var bar = document.getElementById('bar');
+var mainbtn = document.getElementById('mainbtn');
+var barnote = document.getElementById('barnote');
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+}); }
+function money(n){ return '£' + n; }
+
+/* ---------- navigation ---------- */
+function go(screen, keep){
+  if (!keep) S.stack.push(S.screen);
+  S.screen = screen;
+  window.scrollTo(0,0);
+  render();
+}
+function back(){
+  S.screen = S.stack.pop() || 'home';
+  window.scrollTo(0,0);
+  render();
+}
+function resetTo(screen){
+  S.stack = [];
+  S.sel = {};
+  S.form = {};
+  S.screen = screen;
+  window.scrollTo(0,0);
+  render();
+}
+if (tg && tg.BackButton) {
+  try { tg.BackButton.onClick(function(){ back(); }); } catch(e){}
+}
+function syncBackButton(){
+  if (!tg || !tg.BackButton) return;
+  try { if (S.stack.length) tg.BackButton.show(); else tg.BackButton.hide(); } catch(e){}
+}
+
+/* ---------- load ---------- */
+function load(){
+  fetch('data.json?v=' + Date.now(), { cache:'no-store' })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(json){ D = json; render(); })
+    .catch(function(err){ showFallback(err); });
+}
+function showFallback(err){
+  bar.style.display = 'none';
+  app.innerHTML =
+    '<div class="fallback">' +
+      '<div class="ic">⚡</div>' +
+      '<p class="t2">We can\'t load the studio right now</p>' +
+      '<p class="sub" style="margin-top:10px">The booking data didn\'t come through. It\'s usually a connection wobble — try again in a moment.</p>' +
+      '<button class="btn" style="margin-top:22px" onclick="location.reload()">Try again</button>' +
+      '<p class="cap" style="margin-top:16px">Or message ' + esc((D && D.studio && D.studio.contact) || '@lilija_bekisa') + ' directly.</p>' +
+      '<p class="cap" style="margin-top:14px;color:#3A3A3C">' + esc(err && err.message ? err.message : 'unknown error') + '</p>' +
+    '</div>';
+}
+
+/* ---------- bottom bar ---------- */
+function setBar(label, enabled, onClick, note, ghost){
+  if (!label) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  mainbtn.textContent = label;
+  mainbtn.disabled = !enabled;
+  mainbtn.className = 'btn' + (ghost ? ' ghost' : '');
+  mainbtn.onclick = function(){ if (!mainbtn.disabled) { haptic('medium'); onClick(); } };
+  if (note) { barnote.style.display = 'block'; barnote.textContent = note; }
+  else { barnote.style.display = 'none'; }
+}
+
+/* ---------- partials ---------- */
+function header(){
+  var s = D.studio, im = D.images || {};
+  if (im.hero) {
+    return '<div class="bleed hero"><img src="' + im.hero + '" alt="">' +
+      '<div class="hero-txt"><div class="brand">' + esc(s.name) + '</div>' +
+      '<div class="tag">' + esc(s.tagline) + '</div>' +
+      '<div class="loc">' + esc(s.location) + '</div></div></div>';
+  }
+  return '<header><div><div class="brand">' + esc(s.name) + '</div>' +
+    '<div class="brand-sub">' + esc(s.location) + '</div></div></header>' +
+    '<div class="tagline">' + esc(s.tagline) + '</div>';
+}
+function backbar(label){
+  return '<div class="backbar" onclick="LAB.back()">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>' +
+    esc(label || 'Back') + '</div>';
+}
+function spotsLabel(e){
+  if (e.spotsLeft <= 0) return '<span class="spots low">Sold out</span>';
+  if (e.spotsLeft <= 5) return '<span class="spots low">Only ' + e.spotsLeft + ' left</span>';
+  return '<span class="spots ok">' + e.spotsLeft + ' of ' + e.capacity + ' left</span>';
+}
+function eventCard(e){
+  return '<div class="ev tap" onclick="LAB.openEvent(\'' + e.id + '\')">' +
+    '<div class="ev-top"><div class="ev-title">' + esc(e.title) + '</div>' +
+    '<div class="pill">' + esc(e.dateLabel) + '</div></div>' +
+    '<div class="ev-foot" style="border-top:none;padding-top:0;margin-top:18px">' +
+    '<div class="price">' + money(e.price) + '</div>' + spotsLabel(e) + '</div></div>';
+}
+function serviceRow(sv){
+  var from = sv.options.filter(function(o){ return o.price > 0; })
+    .reduce(function(m,o){ return Math.min(m, o.price); }, 1e9);
+  return '<div class="srv tap" onclick="LAB.openService(\'' + sv.id + '\')">' +
+    '<div class="srv-i">' + esc((sv.short || sv.day.slice(0,3)).toUpperCase()) + '</div>' +
+    '<div class="srv-b"><div class="srv-n">' + esc(sv.name) + '</div></div>' +
+    '<div class="srv-p"><b>' + money(from) + '</b><span style="font-size:11px">from</span></div>' +
+    '<div class="chev"></div></div>';
+}
+
+/* ---------- screens ---------- */
+function screenHome(){
+  var h = header();
+
+  h += '<section><div class="sec-head"><p class="upper">Upcoming events</p>' +
+       '<span class="sub">Saturdays</span></div>' +
+       D.events.map(eventCard).join('') + '</section>';
+
+  h += '<section><div class="sec-head"><p class="upper">Book a session</p></div>' +
+       D.services.map(serviceRow).join('') + '</section>';
+
+  var m = D.membership, im = D.images || {};
+  h += '<section><div class="sec-head"><p class="upper">Membership</p>' +
+       '<span class="link" onclick="LAB.go(\'membership\')">See all</span></div>';
+  if (im.detail) h += '<div class="photo" style="margin-bottom:14px"><img src="' + im.detail + '" alt=""></div>';
+  h += '<div class="card tap" onclick="LAB.go(\'membership\')" style="padding:20px">' +
+       '<p class="t2">' + esc(m.hook) + '</p>' +
+       '<p class="sub" style="margin-top:8px">From ' + money(m.tiers[0].price) + ' a month.</p>' +
+       '<p class="accent" style="margin-top:14px;font-weight:600;font-size:14px">View tiers →</p></div></section>';
+
+  var r = D.roster;
+  h += '<section>';
+  if (im.band) {
+    h += '<div class="band" style="border-bottom-left-radius:0;border-bottom-right-radius:0"><img src="' + im.band + '" alt="">' +
+         '<div class="band-txt"><p class="upper" style="color:var(--accent)">' + esc(r.name) + ' · ' + money(r.price) + '/' + esc(r.period) + '</p>' +
+         '<p class="t2" style="margin-top:6px">' + esc(r.hook) + '</p></div></div>';
+  }
+  h += '<div class="rost-banner" style="padding:20px' + (im.band ? ';border-top-left-radius:0;border-top-right-radius:0;border-top:none' : '') + '">' +
+       (im.band ? '' : '<p class="upper" style="color:var(--accent)">' + esc(r.name) + ' · ' + money(r.price) + '/' + esc(r.period) + '</p>') +
+       '<p class="sub">' + esc(r.intro) + '</p>' +
+       '<div style="display:flex;gap:9px;margin-top:18px">' +
+       '<button class="btn" style="padding:13px;font-size:14px" onclick="LAB.go(\'roster\')">Find a creator</button>' +
+       '<button class="btn ghost" style="padding:13px;font-size:14px" onclick="LAB.go(\'joinRoster\')">Apply</button>' +
+       '</div></div></section>';
+
+  h += '<p class="demo" style="margin-top:34px">' + esc(D.studio.contact) + '</p>';
+
+  app.innerHTML = h;
+  setBar('Book a session', true, function(){ document.querySelectorAll('.srv')[0].scrollIntoView({behavior:'smooth',block:'center'}); });
+}
+
+function screenService(){
+  var sv = D.services.filter(function(x){ return x.id === S.sel.serviceId; })[0];
+  var h = backbar('Back');
+
+  h += '<p class="upper">' + esc(sv.day) + '</p>' +
+       '<h1 class="large-title" style="margin-top:6px">' + esc(sv.name) + '</h1>' +
+       '<p class="body" style="color:#D1D1D6;margin-top:12px">' + esc(sv.description) + '</p>' +
+       '<div class="pill grey" style="margin-top:14px">' + esc(sv.operator) + '</div>';
+
+  h += '<section><p class="upper" style="margin-bottom:12px">Choose your option</p>';
+  sv.options.forEach(function(o){
+    if (o.isMembershipLink) {
+      h += '<div class="opt" onclick="LAB.go(\'membership\')">' +
+           '<div><div class="opt-n">' + esc(o.label) + '</div>' +
+           '<div class="opt-d">' + esc(o.detail) + '</div></div>' +
+           '<div class="opt-p accent" style="font-size:13px">View →</div></div>';
+    } else {
+      h += '<div class="opt' + (S.sel.optionId === o.id ? ' on' : '') + '" onclick="LAB.pickOption(\'' + o.id + '\')">' +
+           '<div><div class="opt-n">' + esc(o.label) + '</div>' +
+           '<div class="opt-d">' + esc(o.detail) + '</div></div>' +
+           '<div class="opt-p">' + money(o.price) + '<div class="opt-d" style="text-align:right">' + esc(o.unit) + '</div></div></div>';
+    }
+  });
+  h += '</section>';
+
+  if (sv.addons && sv.addons.length) {
+    h += '<section><p class="upper" style="margin-bottom:12px">Add-ons</p>';
+    sv.addons.forEach(function(a){
+      h += '<div class="opt' + (S.sel.addons && S.sel.addons[a.id] ? ' on' : '') + '" onclick="LAB.toggleAddon(\'' + a.id + '\')">' +
+           '<div><div class="opt-n">' + esc(a.label) + '</div>' +
+           '<div class="opt-d">' + esc(a.detail) + '</div></div>' +
+           '<div class="opt-p">+' + money(a.price) + '</div></div>';
+    });
+    h += '</section>';
+  }
+
+  h += '<section><p class="upper" style="margin-bottom:12px">Pick a slot</p><div class="slots">';
+  sv.slots.forEach(function(sl, i){
+    var key = sv.id + '|' + i;
+    h += '<div class="slot' + (sl.available ? '' : ' off') + (S.sel.slotKey === key ? ' on' : '') + '"' +
+         (sl.available ? ' onclick="LAB.pickSlot(\'' + key + '\')"' : '') + '>' +
+         '<div class="d">' + esc(sl.dateLabel) + '</div>' +
+         '<div class="t">' + esc(sl.time) + '</div></div>';
+  });
+  h += '</div><p class="note">Slots shown are currently free. Your request is confirmed by Lilija before it\'s locked in.</p></section>';
+
+  app.innerHTML = h;
+  var ready = !!(S.sel.optionId && S.sel.slotKey);
+  setBar(ready ? 'Continue · ' + money(currentTotal()) : 'Select an option and a slot', ready, function(){ go('form'); });
+  syncBackButton();
+}
+
+function screenEvent(){
+  var e = D.events.filter(function(x){ return x.id === S.sel.eventId; })[0];
+  var h = backbar('Back');
+
+  h += '<p class="upper">Experience evening</p>' +
+       '<h1 class="large-title accent" style="margin-top:6px">' + esc(e.title) + '</h1>' +
+       '<p class="t2" style="color:var(--muted);font-weight:400;margin-top:6px">' + esc(e.subtitle) + '</p>';
+
+  h += '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">' +
+       '<div class="pill">' + esc(e.dateLabel) + '</div>' +
+       '<div class="pill grey">' + esc(e.time) + '</div>' +
+       '<div class="pill grey">' + esc(e.host) + '</div></div>';
+
+  h += '<p class="body" style="color:#D1D1D6;margin-top:18px">' + esc(e.description) + '</p>';
+
+  h += '<section><p class="upper" style="margin-bottom:12px">What\'s included</p>' +
+       '<div class="card"><ul class="perks">' +
+       e.includes.map(function(i){ return '<li>' + esc(i) + '</li>'; }).join('') +
+       '</ul></div></section>';
+
+  h += '<section><div class="card" style="display:flex;justify-content:space-between;align-items:center">' +
+       '<div><div class="price">' + money(e.price) + '</div><div class="sub">per person</div></div>' +
+       '<div style="text-align:right">' + spotsLabel(e) +
+       '<div class="sub" style="margin-top:3px">' + e.capacity + ' places total</div></div></div></section>';
+
+  h += '<section><p class="upper" style="margin-bottom:10px">How many places?</p><div class="slots">';
+  [1,2,3,4].forEach(function(n){
+    var off = n > e.spotsLeft;
+    h += '<div class="slot' + (off ? ' off' : '') + (S.sel.qty === n ? ' on' : '') + '"' +
+         (off ? '' : ' onclick="LAB.pickQty(' + n + ')"') + ' style="text-align:center">' +
+         '<div class="d">' + n + '</div><div class="t">' + money(e.price * n) + '</div></div>';
+  });
+  h += '</div></section>';
+
+  app.innerHTML = h;
+  var ready = !!S.sel.qty && e.spotsLeft > 0;
+  setBar(e.spotsLeft <= 0 ? 'Sold out' : (ready ? 'Reserve · ' + money(e.price * S.sel.qty) : 'Choose how many places'),
+    ready, function(){ go('form'); });
+  syncBackButton();
+}
+
+function screenMembership(){
+  var m = D.membership;
+  var h = backbar('Back');
+  h += '<p class="upper">Membership</p>' +
+       '<h1 class="large-title" style="margin-top:6px">Come every week</h1>' +
+       '<p class="body" style="color:#D1D1D6;margin-top:12px">Weekly studio time, workshops and event tickets in one monthly payment. Cancel any time.</p><div style="height:22px"></div>';
+
+  m.tiers.forEach(function(t){
+    h += '<div class="tier tap' + (t.best ? ' best' : '') + (S.sel.tierId === t.id ? ' best' : '') + '" onclick="LAB.pickTier(\'' + t.id + '\')">' +
+      (t.best ? '<div class="tier-tag">Most popular</div>' : '') +
+      '<div class="tier-h"><div class="tier-n">' + esc(t.name) + '</div>' +
+      '<div class="tier-p">' + money(t.price) + '<small>/' + esc(t.period) + '</small></div></div>' +
+      '<ul class="perks">' + t.perks.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('') + '</ul></div>';
+  });
+
+  h += '<p class="note">Membership is a recurring monthly payment. You\'ll be taken to a secure payment page to set it up — nothing is taken until you confirm there.</p>';
+
+  app.innerHTML = h;
+  var t = m.tiers.filter(function(x){ return x.id === S.sel.tierId; })[0];
+  setBar(t ? 'Join ' + t.name + ' · ' + money(t.price) + '/month' : 'Choose a tier', !!t, function(){ go('form'); });
+  syncBackButton();
+}
+
+function screenRoster(){
+  var r = D.roster;
+  var list = r.creators.filter(function(c){ return S.filter === 'All' || c.specialism === S.filter; });
+  var h = backbar('Back');
+
+  h += '<p class="upper">' + esc(r.name) + '</p>' +
+       '<h1 class="large-title" style="margin-top:6px">Find a creator</h1>' +
+       '<p class="body" style="color:#D1D1D6;margin-top:12px">Photographers, videographers, make-up artists and stylists who work out of Lab 33. Book them, book the room, done.</p>';
+
+  h += '<div class="filters" style="margin-top:20px">' +
+       ['All'].concat(r.specialisms).map(function(s){
+         return '<div class="chip' + (S.filter === s ? ' on' : '') + '" onclick="LAB.setFilter(\'' + s + '\')">' + esc(s) + '</div>';
+       }).join('') + '</div>';
+
+  if (!list.length) {
+    h += '<div class="card center" style="padding:30px 18px"><p class="sub">No one here yet for this.</p></div>';
+  } else {
+    h += list.map(function(c){
+      return '<div class="cr"><div class="av">' + esc(c.initials) + '</div>' +
+        '<div class="srv-b"><div class="srv-n">' + esc(c.name) + '</div>' +
+        '<div class="srv-d">' + esc(c.focus) + '</div></div>' +
+        '<div class="pill grey">' + esc(c.specialism) + '</div></div>';
+    }).join('');
+  }
+
+  if (D.settings && D.settings.showDemoNotice) {
+    h += '<p class="demo">Demo profiles — replace with real members in data.json.</p>';
+  }
+
+  app.innerHTML = h;
+  setBar((r.joinCta || ('Join ' + r.name)) + ' · ' + money(r.price) + '/month', true, function(){ go('joinRoster'); });
+  syncBackButton();
+}
+
+function screenJoinRoster(){
+  var r = D.roster;
+  var h = backbar('Back');
+
+  h += '<p class="upper">' + esc(r.name) + '</p>' +
+       '<h1 class="large-title" style="margin-top:6px">' + esc(r.joinCta || ('Join ' + r.name)) + '</h1>' +
+       '<p class="t2 accent" style="margin-top:10px">' + money(r.price) + ' <span class="sub" style="font-weight:400">/ month</span></p>';
+
+  h += '<section><div class="card"><ul class="perks">' +
+       r.perks.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('') +
+       '</ul></div></section>';
+
+  h += '<div class="card" style="margin-top:12px;background:var(--accent-dim);border:1px solid rgba(255,106,0,.3)">' +
+       '<p class="sub" style="color:#D1D1D6">' + esc(r.gate) + '</p></div>';
+
+  var u = tgUser();
+  h += '<section><p class="upper" style="margin-bottom:12px">Your application</p>' +
+    '<div class="field"><input id="f-name" placeholder="Full name" value="' + esc(S.form.name || (u ? ((u.first_name||'') + ' ' + (u.last_name||'')).trim() : '')) + '" oninput="LAB.formIn()"></div>' +
+    '<div class="field"><select id="f-spec" onchange="LAB.formIn()">' +
+      '<option value="">What do you do?</option>' +
+      r.specialisms.map(function(s){ return '<option' + (S.form.spec === s ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') +
+    '</select></div>' +
+    '<div class="field"><input id="f-link" placeholder="Portfolio or Instagram link" value="' + esc(S.form.link || '') + '" oninput="LAB.formIn()"></div>' +
+    '<div class="field"><input id="f-contact" placeholder="Phone or @username" value="' + esc(S.form.contact || (u && u.username ? '@' + u.username : '')) + '" oninput="LAB.formIn()"></div>' +
+    '<p class="note">Applications are reviewed before profiles go live. Payment is only set up once you\'re approved.</p></section>';
+
+  app.innerHTML = h;
+  bindForm();
+  updateRosterBar();
+  syncBackButton();
+}
+function updateRosterBar(){
+  var ok = !!(S.form.name && S.form.spec && S.form.contact);
+  setBar(ok ? 'Send application' : 'Fill in your details', ok, function(){ submit('roster'); });
+}
+
+function screenForm(){
+  var u = tgUser();
+  var h = backbar('Back');
+  var kind = S.sel.tierId ? 'membership' : (S.sel.eventId ? 'event' : 'service');
+
+  h += '<h1 class="large-title">' + (kind === 'membership' ? 'Set up membership' : 'Your details') + '</h1>' +
+       '<p class="sub" style="margin-top:8px">' +
+       (kind === 'membership'
+         ? 'Two fields, then the payment page.'
+         : 'Two fields. Lilija confirms your slot personally.') + '</p>';
+
+  h += '<div style="height:22px"></div>' + summaryBox();
+
+  h += '<div class="field"><input id="f-name" placeholder="Your name" value="' +
+       esc(S.form.name || (u ? ((u.first_name||'') + ' ' + (u.last_name||'')).trim() : '')) + '" oninput="LAB.formIn()"></div>' +
+       '<div class="field"><input id="f-contact" placeholder="Phone or @username" value="' +
+       esc(S.form.contact || (u && u.username ? '@' + u.username : '')) + '" oninput="LAB.formIn()"></div>';
+
+  h += '<p class="note">' + (kind === 'membership'
+      ? 'Next step is a secure payment page where your monthly subscription is set up. Nothing is charged until you confirm there.'
+      : 'Nothing is charged now. You pay at the studio or by invoice once your booking is confirmed.') + '</p>';
+
+  app.innerHTML = h;
+  bindForm();
+  updateFormBar(kind);
+  syncBackButton();
+}
+function updateFormBar(kind){
+  var ok = !!(S.form.name && S.form.contact);
+  var label = kind === 'membership' ? 'Continue to payment' : 'Send request';
+  setBar(ok ? label : 'Fill in both fields', ok, function(){
+    submit(kind === 'membership' ? 'membership' : (S.sel.eventId ? 'event' : 'service'));
+  });
+}
+
+function screenPayment(){
+  var t = D.membership.tiers.filter(function(x){ return x.id === S.sel.tierId; })[0];
+  var h = backbar('Back');
+  h += '<h1 class="large-title">Payment</h1>' +
+    '<div style="height:20px"></div>' +
+    '<div class="sum">' +
+      '<div class="sum-r"><span>Plan</span><span>' + esc(t.name) + '</span></div>' +
+      '<div class="sum-r"><span>Billing</span><span>Monthly, cancel any time</span></div>' +
+      '<div class="sum-r"><span>Name</span><span>' + esc(S.form.name) + '</span></div>' +
+      '<div class="sum-r total"><span>Due monthly</span><span>' + money(t.price) + '</span></div>' +
+    '</div>' +
+    '<div class="card" style="border:1px dashed var(--line);text-align:center;padding:30px 18px">' +
+      '<p class="upper">Prototype</p>' +
+      '<p class="body" style="margin-top:10px;color:#D1D1D6">The live version opens a secure payment page here — Stripe or GoCardless — which sets up the monthly subscription and handles renewals automatically.</p>' +
+      '<p class="cap" style="margin-top:12px">No card details are collected in this prototype.</p>' +
+    '</div>';
+  app.innerHTML = h;
+  setBar('Simulate successful payment', true, function(){ S.sel.paid = true; go('done'); });
+  syncBackButton();
+}
+
+function screenDone(){
+  var kind = S.sel.doneKind;
+  var h = '<div class="tick"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+
+  if (kind === 'membership') {
+    h += '<div class="center"><h1 class="t1">You\'re in</h1>' +
+      '<p class="sub" style="margin-top:10px;padding:0 10px">Your membership is active. Your first Monday session is booked automatically — Lilija will message you with the details.</p></div>';
+  } else if (kind === 'roster') {
+    h += '<div class="center"><h1 class="t1">Application sent</h1>' +
+      '<p class="sub" style="margin-top:10px;padding:0 10px">Lilija reviews every profile personally. You\'ll hear back within a couple of days — payment is only set up once you\'re approved.</p></div>';
+  } else {
+    h += '<div class="center"><h1 class="t1">Request sent</h1>' +
+      '<p class="sub" style="margin-top:10px;padding:0 10px">' + esc(D.settings.confirmationNote) + '</p></div>';
+  }
+
+  h += '<div style="height:26px"></div>' + summaryBox(true);
+
+  if (kind === 'service' || kind === 'event') {
+    var m = D.membership;
+    h += '<div class="upsell"><p class="upper" style="color:var(--accent)">Coming back?</p>' +
+      '<p class="t2" style="margin-top:8px">Membership from ' + money(m.tiers[0].price) + ' a month</p>' +
+      '<p class="sub" style="margin-top:8px">Weekly studio time, workshops and early access to events — for less than two ad-hoc bookings.</p>' +
+      '<button class="btn" style="margin-top:16px;padding:13px;font-size:14px" onclick="LAB.goMembership()">See membership</button></div>';
+  }
+
+  h += '<div class="hr"></div><p class="cap center">Submitted data — prototype only, also logged to the console:</p>' +
+    '<pre class="cap" style="background:var(--card);border-radius:12px;padding:14px;margin-top:10px;overflow-x:auto;color:#8E8E93;font-size:11px">' +
+    esc(JSON.stringify(lastPayload, null, 2)) + '</pre>';
+
+  app.innerHTML = h;
+  setBar('Back to Lab 33', true, function(){ resetTo('home'); }, null, true);
+  if (tg && tg.BackButton) { try { tg.BackButton.hide(); } catch(e){} }
+}
+
+/* ---------- summary ---------- */
+function currentTotal(){
+  if (S.sel.tierId) {
+    var t = D.membership.tiers.filter(function(x){ return x.id === S.sel.tierId; })[0];
+    return t ? t.price : 0;
+  }
+  if (S.sel.eventId) {
+    var e = D.events.filter(function(x){ return x.id === S.sel.eventId; })[0];
+    return e ? e.price * (S.sel.qty || 1) : 0;
+  }
+  var sv = D.services.filter(function(x){ return x.id === S.sel.serviceId; })[0];
+  if (!sv) return 0;
+  var o = sv.options.filter(function(x){ return x.id === S.sel.optionId; })[0];
+  var total = o ? o.price : 0;
+  if (sv.addons && S.sel.addons) {
+    sv.addons.forEach(function(a){ if (S.sel.addons[a.id]) total += a.price; });
+  }
+  return total;
+}
+function summaryBox(){
+  var rows = [];
+  if (S.sel.tierId) {
+    var t = D.membership.tiers.filter(function(x){ return x.id === S.sel.tierId; })[0];
+    rows.push(['Plan', t.name], ['Billing', 'Monthly']);
+    rows.push(['TOTAL', money(t.price) + ' / month']);
+  } else if (S.sel.eventId) {
+    var e = D.events.filter(function(x){ return x.id === S.sel.eventId; })[0];
+    rows.push(['Event', e.title], ['When', e.dateLabel + ' · ' + e.time], ['Places', String(S.sel.qty || 1)]);
+    rows.push(['TOTAL', money(e.price * (S.sel.qty || 1))]);
+  } else if (S.sel.serviceId) {
+    var sv = D.services.filter(function(x){ return x.id === S.sel.serviceId; })[0];
+    var o = sv.options.filter(function(x){ return x.id === S.sel.optionId; })[0];
+    var sl = S.sel.slotKey ? sv.slots[parseInt(S.sel.slotKey.split('|')[1], 10)] : null;
+    rows.push(['Session', sv.name]);
+    if (o) rows.push(['Option', o.label]);
+    if (sl) rows.push(['When', sl.dateLabel + ' · ' + sl.time]);
+    if (sv.addons && S.sel.addons) {
+      sv.addons.forEach(function(a){ if (S.sel.addons[a.id]) rows.push(['Add-on', a.label + ' +' + money(a.price)]); });
+    }
+    rows.push(['TOTAL', money(currentTotal())]);
+  } else if (S.form.spec) {
+    rows.push(['Applying as', S.form.spec], ['Membership', money(D.roster.price) + ' / month']);
+  }
+  if (!rows.length) return '';
+  return '<div class="sum">' + rows.map(function(r){
+    var isTotal = r[0] === 'TOTAL';
+    return '<div class="sum-r' + (isTotal ? ' total' : '') + '"><span>' + esc(isTotal ? 'Total' : r[0]) +
+      '</span><span>' + esc(r[1]) + '</span></div>';
+  }).join('') + '</div>';
+}
+
+/* ---------- forms ---------- */
+function bindForm(){
+  var n = document.getElementById('f-name');
+  if (n) n.addEventListener('input', readForm);
+  ['f-contact','f-link','f-spec'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', readForm);
+  });
+}
+function readForm(){
+  var g = function(id){ var e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  S.form.name = g('f-name');
+  S.form.contact = g('f-contact');
+  S.form.link = g('f-link');
+  S.form.spec = g('f-spec');
+  if (S.screen === 'joinRoster') updateRosterBar();
+  else updateFormBar(S.sel.tierId ? 'membership' : 'other');
+}
+
+/* ---------- submit ---------- */
+var lastPayload = {};
+function submit(kind){
+  if (kind === 'membership' && !S.sel.paid) { go('payment'); return; }
+
+  lastPayload = {
+    type: kind,
+    submittedAt: new Date().toISOString(),
+    name: S.form.name,
+    contact: S.form.contact,
+    telegramUser: tgUser() ? { id: tgUser().id, username: tgUser().username } : null
+  };
+  if (kind === 'service') {
+    var sv = D.services.filter(function(x){ return x.id === S.sel.serviceId; })[0];
+    var sl = sv.slots[parseInt(S.sel.slotKey.split('|')[1], 10)];
+    lastPayload.service = sv.name;
+    lastPayload.option = sv.options.filter(function(o){ return o.id === S.sel.optionId; })[0].label;
+    lastPayload.slot = sl.dateLabel + ' ' + sl.time;
+    lastPayload.addons = S.sel.addons ? Object.keys(S.sel.addons).filter(function(k){ return S.sel.addons[k]; }) : [];
+    lastPayload.total = currentTotal();
+  }
+  if (kind === 'event') {
+    var e = D.events.filter(function(x){ return x.id === S.sel.eventId; })[0];
+    lastPayload.event = e.title;
+    lastPayload.date = e.dateLabel;
+    lastPayload.places = S.sel.qty;
+    lastPayload.total = e.price * S.sel.qty;
+  }
+  if (kind === 'membership') {
+    var t = D.membership.tiers.filter(function(x){ return x.id === S.sel.tierId; })[0];
+    lastPayload.tier = t.name;
+    lastPayload.monthly = t.price;
+  }
+  if (kind === 'roster') {
+    lastPayload.specialism = S.form.spec;
+    lastPayload.portfolio = S.form.link;
+    lastPayload.monthly = D.roster.price;
+  }
+
+  console.log('[Lab 33] Submission →', lastPayload);
+  try { if (tg && tg.sendData) tg.sendData(JSON.stringify(lastPayload)); } catch(err){}
+  try { if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); } catch(err){}
+
+  S.sel.doneKind = kind;
+  go('done');
+}
+
+/* ---------- router ---------- */
+function render(){
+  if (!D) return;
+  switch (S.screen) {
+    case 'home':       screenHome(); break;
+    case 'service':    screenService(); break;
+    case 'event':      screenEvent(); break;
+    case 'membership': screenMembership(); break;
+    case 'roster':     screenRoster(); break;
+    case 'joinRoster': screenJoinRoster(); break;
+    case 'form':       screenForm(); break;
+    case 'payment':    screenPayment(); break;
+    case 'done':       screenDone(); break;
+    default:           screenHome();
+  }
+  if (S.screen !== 'done') syncBackButton();
+}
+
+/* ---------- public API ---------- */
+window.LAB = {
+  back: back,
+  go: function(s){ haptic(); go(s); },
+  goMembership: function(){ S.stack = []; S.sel = {}; S.form = {}; S.screen = 'membership'; window.scrollTo(0,0); render(); },
+  openService: function(id){ haptic(); S.sel = { serviceId:id, addons:{} }; go('service'); },
+  openEvent: function(id){ haptic(); S.sel = { eventId:id, qty:1 }; go('event'); },
+  pickOption: function(id){ haptic(); S.sel.optionId = id; render(); },
+  pickSlot: function(k){ haptic(); S.sel.slotKey = k; render(); },
+  toggleAddon: function(id){ haptic(); S.sel.addons = S.sel.addons || {}; S.sel.addons[id] = !S.sel.addons[id]; render(); },
+  pickQty: function(n){ haptic(); S.sel.qty = n; render(); },
+  pickTier: function(id){ haptic(); S.sel.tierId = id; render(); },
+  setFilter: function(f){ haptic(); S.filter = f; render(); },
+  formIn: readForm
+};
+
+load();
+})();
+</script>
+</body>
+</html>
